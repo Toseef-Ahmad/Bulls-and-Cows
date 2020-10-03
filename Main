@@ -1,0 +1,121 @@
+package bullscows;
+
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Scanner;
+import java.util.Set;
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner input = new Scanner(System.in);
+        System.out.println("Input the length of the secret code:");
+        String tempK = input.nextLine();
+        int k = 0;
+        try {
+            k = Integer.parseInt(tempK);
+        } catch (Exception e) {
+            // TODO: handle exception
+            System.out.printf("Error: \"%s\" isn't a valid number.", tempK);
+            return;
+        }
+
+
+        System.out.println("Input the number of possible symbols in the code");
+        int s = Integer.parseInt(input.nextLine());
+        if (s > 36) {
+            System.out.println("Error: maximum number of possible symbols in the code is 36 (0-9, a-z).");
+            return;
+        }
+        if (k > s) {
+            System.out.printf("Error: it's not possible to generate a code with a length of %d with %d unique symbols.", k, s);
+            return;
+        }
+        if (k == 0 && s == 1) {
+            System.out.println("Error");
+            return;
+        }
+        String code = secret(k, s);
+        if (code == null) {
+            return;
+        }
+        System.out.print("The secret is prepared: ");
+        for (int i = 0; i < k; i++) {
+            System.out.print("*");
+        }
+        if (s > 10) {
+            char c = (char) (97 + s - 11);
+            System.out.printf(" (0-9, a-%c).\n", c);
+        } else {
+            System.out.println(" (0-9)");
+        }
+
+        System.out.println("Okay, let's start a game!\nTurn 1:");
+        String[] secretCode = code.split("");
+
+        int turn = 2;
+        while (true) {
+            String n = input.nextLine();
+            char[] num = n.toCharArray();
+
+            int bulls = 0, cows = 0;
+            for (int i = 0; i < k; i++) {
+                if (secretCode[i].matches(String.valueOf(num[i]))) {
+                    bulls++;
+                } else if (n.contains(secretCode[i])) {
+                    cows++;
+                }
+            }
+
+            if (bulls > 0 && cows > 0) {
+                System.out.printf("Grade: %d bull(s) and %d cow(s)\n", bulls, cows);
+            } else if (bulls > 0) {
+                System.out.printf("Grade: %d bull(s)\n", bulls);
+            } else if (cows > 0) {
+                System.out.printf("Grade: %d cow(s)\n", cows);
+            } else {
+                System.out.println("Grade: 0 bulls and 0 cows");
+            }
+
+            if (bulls == k) {
+                System.out.println("Congratulations! You guessed the secret code.");
+                break;
+            }
+
+            System.out.printf("Turn %d:\n", turn);
+            turn++;
+        }
+    }
+
+    static String secret(int n, int s) {
+        if (n > 36) {
+            System.out.printf("Error: can't generate a secret number with a length of %d because there aren't enough unique digits.\n" +
+                    "Please enter a number not greater than 36.\n", n);
+            return null;
+        }
+
+        Set<String> secret = new HashSet<>();
+
+        if (s > 10) {
+            while (secret.size() < n) {
+                secret.add("" + new Random().nextInt(10));
+                secret.add(((char) (97 + new Random().nextInt(s - 10))) + "");
+            }
+        } else {
+            while (secret.size() < n) {
+                secret.add("" + new Random().nextInt(10));
+            }
+        }
+
+        while (secret.size() > n) {
+            secret.remove("" + new Random().nextInt(10));
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (String m : secret) {
+            System.out.print(m + " ");
+            builder.append(m);
+        }
+
+        return builder.toString();
+    }
+}
